@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SauceTube</title>
+  <link rel="icon" type="image/jpeg" href="/thumbnail.jpg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c10;
+      --bg2: #111116;
+      --surface: rgba(255,255,255,0.045);
+      --surface-h: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.07);
+      --border-s: rgba(255,255,255,0.13);
+      --text: #f2f2f7;
+      --muted: rgba(242,242,247,0.45);
+      --dim: rgba(242,242,247,0.22);
+      --accent: #ff3b30;
+      --accent2: #ff6b35;
+      --accent-dim: rgba(255,59,48,0.12);
+      --accent-glow: rgba(255,59,48,0.25);
+      --yellow: #ffd60a;
+      --shadow: 0 12px 48px rgba(0,0,0,0.7);
+      --r: 18px;
+      --r-sm: 11px;
+    }
+
+    [data-theme="light"] {
+      --bg: #ececf1;
+      --bg2: #e4e4ea;
+      --surface: rgba(255,255,255,0.65);
+      --surface-h: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.07);
+      --border-s: rgba(0,0,0,0.13);
+      --text: #0c0c10;
+      --muted: rgba(12,12,16,0.5);
+      --dim: rgba(12,12,16,0.25);
+      --shadow: 0 12px 48px rgba(0,0,0,0.13);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Geist', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.35s, color 0.35s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 55% at 15% 5%, rgba(255,59,48,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 85% 95%, rgba(255,107,53,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,214,10,0.03) 0%, transparent 70%);
+    }
+
+    [data-theme="light"] body::before {
+      background:
+        radial-gradient(ellipse 70% 55% at 15% 5%, rgba(255,59,48,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 85% 95%, rgba(255,107,53,0.04) 0%, transparent 60%);
+    }
+
+    /* noise */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.35;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 18px 80px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      animation: up 0.45s ease both;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .brand-logo {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-s);
+      flex-shrink: 0;
+    }
+
+    .brand-logo img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .brand-name {
+      font-family: 'Geist Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .brand-name span { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    .theme-btn {
+      width: 42px; height: 25px;
+      background: var(--surface);
+      border: 1px solid var(--border-s);
+      border-radius: 100px;
+      cursor: pointer; position: relative;
+      backdrop-filter: blur(12px);
+      transition: background 0.3s;
+    }
+
+    .theme-btn::after {
+      content: '';
+      position: absolute; top: 3px; left: 3px;
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      background: var(--text);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    [data-theme="light"] .theme-btn::after { transform: translateX(17px); }
+
+    /* HERO */
+    .hero {
+      padding: 8px 0 4px;
+      animation: up 0.45s 0.06s ease both;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(255,59,48,0.22);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .hero-badge-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-size: clamp(30px, 8vw, 50px);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero h1 strong { font-weight: 600; }
+
+    .hero p {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    /* GLASS CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.055);
+      overflow: hidden;
+      animation: up 0.45s 0.12s ease both;
+    }
+
+    [data-theme="light"] .card {
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+
+    /* URL INPUT */
+    .url-section { padding: 20px 20px 16px; }
+
+    .url-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .url-row {
+      display: flex; gap: 8px; align-items: stretch;
+    }
+
+    .url-input {
+      flex: 1;
+      padding: 12px 14px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .url-input::placeholder { color: var(--dim); }
+    .url-input:focus { border-color: var(--accent); background: var(--surface); }
+
+    .paste-btn {
+      padding: 0 14px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .paste-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(255,59,48,0.25); }
+
+    .divider { height: 1px; background: var(--border); }
+
+    /* FORMAT SECTION */
+    .format-section { padding: 16px 20px; }
+
+    .section-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* Type tabs */
+    .type-tabs {
+      display: flex; gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .type-tab {
+      flex: 1; padding: 9px;
+      background: var(--surface-h);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .type-tab.active {
+      background: var(--accent-dim);
+      border-color: rgba(255,59,48,0.3);
+      color: var(--accent);
+    }
+
+    /* Format + quality grid */
+    .options-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .opt-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .opt-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+    }
+
+    .opt-select {
+      width: 100%; padding: 10px 12px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: var(--text);
+      outline: none; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      transition: border-color 0.2s;
+    }
+
+    .opt-select:focus { border-color: var(--accent); }
+
+    /* Quality pills for audio kbps */
+    .kbps-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 5px;
+    }
+
+    .kbps-pill {
+      padding: 8px 4px;
+      background: var(--surface-h);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; text-align: center;
+      color: var(--muted); cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .kbps-pill.active {
+      background: var(--accent-dim);
+      border-color: rgba(255,59,48,0.3);
+      color: var(--accent);
+    }
+
+    /* CONVERT BUTTON */
+    .go-btn {
+      width: 100%; padding: 15px 20px;
+      background: transparent;
+      border: none; border-top: 1px solid var(--border);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent);
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .go-btn:hover:not(:disabled) { background: var(--accent-dim); }
+    .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .go-btn svg {
+      width: 15px; height: 15px;
+      stroke: currentColor; stroke-width: 1.8; fill: none;
+      transition: transform 0.25s;
+    }
+
+    .go-btn:hover:not(:disabled) svg { transform: translateX(4px); }
+
+    /* PROGRESS */
+    .prog-wrap {
+      display: none; padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      gap: 10px; flex-direction: column;
+    }
+
+    .prog-wrap.show { display: flex; }
+
+    .prog-row {
+      display: flex; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .prog-bar { height: 2px; background: var(--border-s); border-radius: 2px; overflow: hidden; }
+
+    .prog-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px; width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .prog-fill.indie {
+      width: 38%; animation: indie 1.3s ease-in-out infinite;
+    }
+
+    @keyframes indie {
+      0% { transform: translateX(-200%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* ERROR */
+    .err-msg {
+      display: none; padding: 12px 16px;
+      background: rgba(255,59,48,0.08);
+      border: 1px solid rgba(255,59,48,0.2);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: rgba(255,100,100,0.9);
+      line-height: 1.6;
+    }
+
+    .err-msg.show { display: block; }
+
+    /* RESULT CARD */
+    .result-card {
+      display: none; flex-direction: column;
+      animation: up 0.35s ease both;
+    }
+
+    .result-card.show { display: flex; }
+
+    .result-top {
+      padding: 20px 20px 16px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+
+    .result-thumb {
+      width: 72px; height: 48px;
+      border-radius: 8px; overflow: hidden;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .result-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .result-thumb-placeholder svg {
+      width: 20px; height: 20px;
+      stroke: var(--dim); stroke-width: 1.5; fill: none;
+    }
+
+    .result-info { flex: 1; min-width: 0; }
+
+    .result-title {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .result-meta {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .result-ready {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* Download btn */
+    .dl-section { padding: 0 20px 20px; }
+
+    .dl-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px 20px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      text-decoration: none;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .dl-btn:hover {
+      background: var(--accent);
+      border-color: transparent;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .dl-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; stroke-width: 1.8; fill: none;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--dim);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="/thumbnail.jpg" alt="SauceTube" onerror="this.parentElement.innerHTML='<svg viewBox=\'0 0 34 34\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'><rect width=\'34\' height=\'34\' fill=\'%23ff3b30\'/><polygon points=\'13,10 24,17 13,24\' fill=\'white\'/></svg>'"/>
+      </div>
+      <div class="brand-name">Sauce<span>Tube</span></div>
+    </div>
+    <div class="nav-right">
+      <button class="theme-btn" id="themeBtn"></button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> YouTube Downloader</div>
+    <h1>Download<br><em>any</em> video<br><strong>your way.</strong></h1>
+    <p>MP4, WebM, MKV up to 4K — or strip it to audio. No cap.</p>
+  </div>
+
+  <!-- Main card -->
+  <div class="card" id="mainCard">
+    <!-- URL input -->
+    <div class="url-section">
+      <div class="url-label">YouTube URL</div>
+      <div class="url-row">
+        <input class="url-input" id="urlInput" type="url" placeholder="https://youtu.be/..." autocomplete="off" spellcheck="false"/>
+        <button class="paste-btn" id="pasteBtn">Paste</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Format -->
+    <div class="format-section">
+      <div class="section-label">Output Format</div>
+
+      <div class="type-tabs">
+        <button class="type-tab active" data-type="video">Video</button>
+        <button class="type-tab" data-type="audio">Audio</button>
+      </div>
+
+      <!-- Video options -->
+      <div id="videoOpts" class="options-grid">
+        <div class="opt-group">
+          <div class="opt-label">Format</div>
+          <select class="opt-select" id="vidFormat">
+            <option value="mp4">MP4</option>
+            <option value="webm">WebM</option>
+            <option value="mkv">MKV</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">Quality</div>
+          <select class="opt-select" id="vidQuality">
+            <option value="4k">4K</option>
+            <option value="1440p">1440p</option>
+            <option value="1080p" selected>1080p</option>
+            <option value="720p">720p</option>
+            <option value="480p">480p</option>
+            <option value="360p">360p</option>
+            <option value="240p">240p</option>
+            <option value="144p">144p</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Audio options -->
+      <div id="audioOpts" style="display:none;">
+        <div class="opt-group" style="margin-bottom:10px;">
+          <div class="opt-label">Format</div>
+          <select class="opt-select" id="audFormat">
+            <option value="mp3">MP3</option>
+            <option value="wav">WAV</option>
+            <option value="m4a">M4A</option>
+            <option value="ogg">OGG</option>
+            <option value="opus">Opus</option>
+            <option value="flac">FLAC</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">Quality</div>
+          <div class="kbps-grid" id="kbpsGrid">
+            <button class="kbps-pill" data-kbps="320kbps">320</button>
+            <button class="kbps-pill active" data-kbps="192kbps">192</button>
+            <button class="kbps-pill" data-kbps="128kbps">128</button>
+            <button class="kbps-pill" data-kbps="64kbps">64</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Go button -->
+    <button class="go-btn" id="goBtn" disabled>
+      <span>Download</span>
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <!-- Progress -->
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-row">
+        <span id="progText">Processing...</span>
+        <span id="progPct"></span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill indie" id="progFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="err-msg" id="errMsg"></div>
+
+  <!-- Result card -->
+  <div class="card result-card" id="resultCard">
+    <div class="result-top">
+      <div class="result-thumb" id="resultThumb">
+        <div class="result-thumb-placeholder">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10,8 16,12 10,16"/></svg>
+        </div>
+      </div>
+      <div class="result-info">
+        <div class="result-title" id="resultTitle">Ready</div>
+        <div class="result-meta" id="resultMeta"></div>
+        <div class="result-ready">Ready to download</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="dl-section">
+      <a class="dl-btn" id="dlBtn" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download File
+      </a>
+    </div>
+  </div>
+
+  <footer>SauceTube &mdash; Azazel Codes</footer>
+</div>
+
+<script>
+  // Theme
+  const html = document.documentElement;
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('st-theme', next);
+  });
+  html.setAttribute('data-theme', localStorage.getItem('st-theme') || 'dark');
+
+  // Paste
+  document.getElementById('pasteBtn').addEventListener('click', async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      document.getElementById('urlInput').value = t;
+      checkUrl();
+    } catch {}
+  });
+
+  // URL validation
+  const urlInput = document.getElementById('urlInput');
+  const goBtn = document.getElementById('goBtn');
+
+  urlInput.addEventListener('input', checkUrl);
+
+  function checkUrl() {
+    const v = urlInput.value.trim();
+    const ok = v && (v.includes('youtube.com') || v.includes('youtu.be'));
+    goBtn.disabled = !ok;
+  }
+
+  // Type tabs
+  let currentType = 'video';
+  document.querySelectorAll('.type-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentType = btn.dataset.type;
+      document.getElementById('videoOpts').style.display = currentType === 'video' ? 'grid' : 'none';
+      document.getElementById('audioOpts').style.display = currentType === 'audio' ? 'block' : 'none';
+    });
+  });
+
+  // kbps pills
+  let selectedKbps = '192kbps';
+  document.querySelectorAll('.kbps-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.kbps-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      selectedKbps = p.dataset.kbps;
+    });
+  });
+
+  // Main logic
+  const progWrap = document.getElementById('progWrap');
+  const progFill = document.getElementById('progFill');
+  const progText = document.getElementById('progText');
+  const progPct = document.getElementById('progPct');
+  const errMsg = document.getElementById('errMsg');
+  const resultCard = document.getElementById('resultCard');
+  const dlBtn = document.getElementById('dlBtn');
+
+  function showErr(msg) {
+    errMsg.textContent = msg;
+    errMsg.classList.add('show');
+  }
+
+  function hideErr() { errMsg.classList.remove('show'); }
+
+  function setProgress(text, pct) {
+    progText.textContent = text;
+    if (pct !== undefined) {
+      progFill.classList.remove('indie');
+      progFill.style.width = pct + '%';
+      progPct.textContent = pct + '%';
+    } else {
+      progFill.classList.add('indie');
+      progFill.style.width = '38%';
+      progPct.textContent = '';
+    }
+  }
+
+  goBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) return;
+
+    hideErr();
+    resultCard.classList.remove('show');
+    progWrap.classList.add('show');
+    goBtn.disabled = true;
+    setProgress('Requesting...', undefined);
+
+    // Build output payload
+    let output;
+    if (currentType === 'video') {
+      output = {
+        type: 'video',
+        format: document.getElementById('vidFormat').value,
+        quality: document.getElementById('vidQuality').value
+      };
+    } else {
+      output = {
+        type: 'audio',
+        format: document.getElementById('audFormat').value,
+        quality: selectedKbps
+      };
+    }
+
+    try {
+      // Step 1: request job
+      const r1 = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, output })
+      });
+
+      if (!r1.ok) {
+        const e = await r1.json().catch(() => ({}));
+        throw new Error(e.error || 'Request failed');
+      }
+
+      const job = await r1.json();
+      if (!job.statusUrl) throw new Error('No status URL from server');
+
+      const statusId = job.statusUrl.split('/').pop();
+      const title = job.title || '';
+
+      setProgress('Converting...', undefined);
+
+      // Step 2: poll status
+      let downloadUrl = null;
+      for (let i = 0; i < 120; i++) {
+        await new Promise(r => setTimeout(r, 2500));
+        const r2 = await fetch(`/api/status/${statusId}`);
+        if (!r2.ok) continue;
+        const status = await r2.json();
+
+        if (status.progress !== undefined) {
+          setProgress('Converting...', status.progress);
+        }
+
+        if (status.status === 'completed' && status.downloadUrl) {
+          downloadUrl = status.downloadUrl;
+          break;
+        }
+
+        if (status.status === 'failed' || status.status === 'error') {
+          throw new Error('Conversion failed on server');
+        }
+      }
+
+      if (!downloadUrl) throw new Error('Timed out waiting for conversion');
+
+      // Done
+      progFill.classList.remove('indie');
+      progFill.style.width = '100%';
+      progPct.textContent = '100%';
+      setProgress('Done', 100);
+
+      setTimeout(() => {
+        progWrap.classList.remove('show');
+        showResult(downloadUrl, title, output, job.duration);
+        goBtn.disabled = false;
+      }, 600);
+
+    } catch (err) {
+      progWrap.classList.remove('show');
+      goBtn.disabled = false;
+      showErr(err.message);
+    }
+  });
+
+  function showResult(url, title, output, duration) {
+    document.getElementById('resultTitle').textContent = title || 'Download ready';
+
+    const fmt = output.format.toUpperCase();
+    const qual = output.quality;
+    const dur = duration ? fmtDur(duration) : '';
+    document.getElementById('resultMeta').textContent =
+      [fmt, qual, dur].filter(Boolean).join(' · ');
+
+    // Try to get YouTube thumbnail
+    const ytId = extractYtId(urlInput.value);
+    const thumb = document.getElementById('resultThumb');
+    if (ytId) {
+      thumb.innerHTML = `<img src="https://i.ytimg.com/vi/${ytId}/mqdefault.jpg" alt="thumb" onerror="this.parentElement.innerHTML='<div class=result-thumb-placeholder><svg viewBox=\\'0 0 24 24\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'3\\'></rect><polygon points=\\'10,8 16,12 10,16\\'></polygon></svg></div>'"/>`;
+    }
+
+    dlBtn.href = url;
+    resultCard.classList.add('show');
+  }
+
+  function extractYtId(url) {
+    const m = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function fmtDur(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+</script>
+</body>
+</html>
