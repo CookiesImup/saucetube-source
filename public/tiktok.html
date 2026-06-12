@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SauceTube — TikTok</title>
+  <link rel="icon" type="image/jpeg" href="/thumbnail.jpg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c10;
+      --surface: rgba(255,255,255,0.045);
+      --surface-h: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.07);
+      --border-s: rgba(255,255,255,0.13);
+      --text: #f2f2f7;
+      --muted: rgba(242,242,247,0.45);
+      --dim: rgba(242,242,247,0.22);
+      --accent: #ff3b30;
+      --accent2: #ff6b35;
+      --accent-dim: rgba(255,59,48,0.12);
+      --pink: #ff2d55;
+      --cyan: #32ade6;
+      --shadow: 0 12px 48px rgba(0,0,0,0.7);
+      --r: 18px;
+      --r-sm: 11px;
+    }
+
+    [data-theme="light"] {
+      --bg: #ececf1;
+      --surface: rgba(255,255,255,0.65);
+      --surface-h: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.07);
+      --border-s: rgba(0,0,0,0.13);
+      --text: #0c0c10;
+      --muted: rgba(12,12,16,0.5);
+      --dim: rgba(12,12,16,0.25);
+      --shadow: 0 12px 48px rgba(0,0,0,0.13);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Geist', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.35s, color 0.35s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 50% at 10% 5%, rgba(255,45,85,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 55% at 90% 90%, rgba(50,173,230,0.06) 0%, transparent 60%);
+    }
+
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.35;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 600px; margin: 0 auto;
+      padding: 40px 18px 80px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      animation: up 0.4s ease both;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+    .brand-logo {
+      width: 34px; height: 34px; border-radius: 8px;
+      overflow: hidden; border: 1px solid var(--border-s); flex-shrink: 0;
+    }
+
+    .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .brand-name {
+      font-family: 'Geist Mono', monospace;
+      font-size: 15px; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+
+    .brand-name span { color: var(--accent); }
+
+    .brand-sub {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--pink);
+      margin-left: 2px;
+    }
+
+    .theme-btn {
+      width: 42px; height: 25px;
+      background: var(--surface); border: 1px solid var(--border-s);
+      border-radius: 100px; cursor: pointer; position: relative;
+      backdrop-filter: blur(12px); transition: background 0.3s;
+    }
+
+    .theme-btn::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 17px; height: 17px; border-radius: 50%;
+      background: var(--text);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    [data-theme="light"] .theme-btn::after { transform: translateX(17px); }
+
+    /* Hero */
+    .hero { padding: 8px 0 4px; animation: up 0.4s 0.06s ease both; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px;
+      background: rgba(255,45,85,0.1);
+      border: 1px solid rgba(255,45,85,0.22);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--pink); margin-bottom: 14px;
+    }
+
+    .badge-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--pink);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 7vw, 46px);
+      font-weight: 300; line-height: 1.1; letter-spacing: -0.03em;
+    }
+
+    .hero h1 em { font-style: normal; color: var(--pink); }
+    .hero h1 strong { font-weight: 600; }
+    .hero p { margin-top: 10px; font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.055);
+      overflow: hidden;
+      animation: up 0.4s 0.12s ease both;
+    }
+
+    [data-theme="light"] .card {
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+
+    .url-section { padding: 20px 20px 16px; }
+
+    .url-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .url-row { display: flex; gap: 8px; }
+
+    .url-input {
+      flex: 1; padding: 12px 14px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input::placeholder { color: var(--dim); }
+    .url-input:focus { border-color: var(--pink); }
+
+    .paste-btn {
+      padding: 0 14px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .paste-btn:hover { background: rgba(255,45,85,0.1); color: var(--pink); border-color: rgba(255,45,85,0.25); }
+
+    .divider { height: 1px; background: var(--border); }
+
+    .go-btn {
+      width: 100%; padding: 15px 20px;
+      background: transparent; border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--pink);
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .go-btn:hover:not(:disabled) { background: rgba(255,45,85,0.08); }
+    .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .go-btn svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; fill: none; transition: transform 0.25s; }
+    .go-btn:hover:not(:disabled) svg { transform: translateX(4px); }
+
+    /* Progress */
+    .prog-wrap {
+      display: none; padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      flex-direction: column; gap: 8px;
+    }
+
+    .prog-wrap.show { display: flex; }
+
+    .prog-row {
+      display: flex; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--muted); letter-spacing: 0.05em;
+    }
+
+    .prog-bar { height: 2px; background: var(--border-s); border-radius: 2px; overflow: hidden; }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink), var(--cyan));
+      border-radius: 2px; width: 38%;
+      animation: indie 1.3s ease-in-out infinite;
+    }
+
+    @keyframes indie {
+      0% { transform: translateX(-200%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* Error */
+    .err-msg {
+      display: none; padding: 12px 16px;
+      background: rgba(255,59,48,0.08);
+      border: 1px solid rgba(255,59,48,0.2);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: rgba(255,100,100,0.9); line-height: 1.6;
+    }
+
+    .err-msg.show { display: block; }
+
+    /* Result */
+    .result-card {
+      display: none; flex-direction: column;
+      animation: up 0.35s ease both;
+    }
+
+    .result-card.show { display: flex; }
+
+    /* Video preview top */
+    .vid-preview {
+      position: relative;
+      background: #000;
+      border-radius: var(--r) var(--r) 0 0;
+      overflow: hidden;
+      max-height: 300px;
+    }
+
+    .vid-cover {
+      width: 100%; display: block;
+      object-fit: cover; max-height: 300px;
+      opacity: 0.85;
+    }
+
+    .vid-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.85) 100%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 16px;
+    }
+
+    .vid-title {
+      font-size: 13px; font-weight: 500; color: #fff;
+      line-height: 1.4; margin-bottom: 6px;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .vid-author {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .author-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.3);
+      object-fit: cover;
+    }
+
+    .author-name {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: rgba(255,255,255,0.8);
+    }
+
+    /* Info grid */
+    .info-section { padding: 16px 20px; }
+
+    .info-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 8px; margin-bottom: 14px;
+    }
+
+    .info-cell {
+      background: var(--surface-h);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+
+    .info-cell-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+    }
+
+    .info-cell-val {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500; color: var(--text);
+    }
+
+    /* Music row */
+    .music-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface-h);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      margin-bottom: 14px;
+    }
+
+    .music-cover {
+      width: 38px; height: 38px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0;
+      border: 1px solid var(--border-s);
+    }
+
+    .music-info { flex: 1; min-width: 0; }
+
+    .music-title {
+      font-size: 12px; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .music-author {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--muted); margin-top: 2px;
+    }
+
+    .music-badge {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; padding: 2px 7px;
+      background: rgba(50,173,230,0.12);
+      border: 1px solid rgba(50,173,230,0.2);
+      border-radius: 100px; color: var(--cyan);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    /* Download buttons */
+    .dl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    .dl-btn {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 5px;
+      padding: 12px 8px;
+      background: var(--surface-h);
+      border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      text-decoration: none; cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .dl-btn:hover { transform: translateY(-2px); }
+
+    .dl-btn.mp4:hover { background: rgba(255,59,48,0.12); border-color: rgba(255,59,48,0.3); }
+    .dl-btn.mp3:hover { background: rgba(50,173,230,0.12); border-color: rgba(50,173,230,0.3); }
+    .dl-btn.music:hover { background: rgba(255,45,85,0.12); border-color: rgba(255,45,85,0.3); }
+
+    .dl-btn-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .dl-btn.mp4 .dl-btn-icon { background: rgba(255,59,48,0.15); }
+    .dl-btn.mp3 .dl-btn-icon { background: rgba(50,173,230,0.15); }
+    .dl-btn.music .dl-btn-icon { background: rgba(255,45,85,0.15); }
+
+    .dl-btn-icon svg { width: 14px; height: 14px; stroke-width: 1.8; fill: none; }
+    .dl-btn.mp4 .dl-btn-icon svg { stroke: var(--accent); }
+    .dl-btn.mp3 .dl-btn-icon svg { stroke: var(--cyan); }
+    .dl-btn.music .dl-btn-icon svg { stroke: var(--pink); }
+
+    .dl-btn-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+    }
+
+    .dl-btn.mp4 .dl-btn-label { color: var(--accent); }
+    .dl-btn.mp3 .dl-btn-label { color: var(--cyan); }
+    .dl-btn.music .dl-btn-label { color: var(--pink); }
+
+    .dl-btn-sub {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; color: var(--dim);
+    }
+
+    footer {
+      text-align: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--dim);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/">
+      <div class="brand-logo">
+        <img src="/thumbnail.jpg" alt="SauceTube" onerror="this.parentElement.innerHTML='<svg viewBox=\'0 0 34 34\' fill=\'none\'><rect width=\'34\' height=\'34\' fill=\'%23ff3b30\'/><polygon points=\'13,10 24,17 13,24\' fill=\'white\'/></svg>'"/>
+      </div>
+      <div>
+        <div class="brand-name">Sauce<span>Tube</span></div>
+        <div class="brand-sub">TikTok</div>
+      </div>
+    </a>
+    <button class="theme-btn" id="themeBtn"></button>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge"><span class="badge-dot"></span> TikTok Downloader</div>
+    <h1>Grab <em>TikTok</em><br><strong>without watermark.</strong></h1>
+    <p>Video, audio, atau musik — pilih sendiri.</p>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="url-section">
+      <div class="url-label">TikTok URL</div>
+      <div class="url-row">
+        <input class="url-input" id="urlInput" type="url" placeholder="https://vt.tiktok.com/..." autocomplete="off" spellcheck="false"/>
+        <button class="paste-btn" id="pasteBtn">Paste</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="go-btn" id="goBtn" disabled>
+      <span>Fetch Info</span>
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-row"><span>Fetching...</span></div>
+      <div class="prog-bar"><div class="prog-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="card result-card" id="resultCard">
+    <!-- Cover + title -->
+    <div class="vid-preview">
+      <img class="vid-cover" id="vidCover" src="" alt="cover"/>
+      <div class="vid-overlay">
+        <div class="vid-title" id="vidTitle"></div>
+        <div class="vid-author">
+          <img class="author-avatar" id="authorAvatar" src="" alt="avatar"/>
+          <span class="author-name" id="authorName"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="info-section">
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-cell-label">Plays</div>
+          <div class="info-cell-val" id="statPlay">-</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Likes</div>
+          <div class="info-cell-val" id="statLike">-</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Shares</div>
+          <div class="info-cell-val" id="statShare">-</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Comments</div>
+          <div class="info-cell-val" id="statComment">-</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Saves</div>
+          <div class="info-cell-val" id="statCollect">-</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-cell-label">Duration</div>
+          <div class="info-cell-val" id="statDur">-</div>
+        </div>
+      </div>
+
+      <!-- Music info -->
+      <div class="music-row">
+        <img class="music-cover" id="musicCover" src="" alt="music"/>
+        <div class="music-info">
+          <div class="music-title" id="musicTitle"></div>
+          <div class="music-author" id="musicAuthor"></div>
+        </div>
+        <div class="music-badge">Music</div>
+      </div>
+
+      <!-- Download buttons -->
+      <div class="dl-grid">
+        <a class="dl-btn mp4" id="dlMp4" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="dl-btn-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div class="dl-btn-label">MP4</div>
+          <div class="dl-btn-sub">No WM</div>
+        </a>
+        <a class="dl-btn mp3" id="dlMp3" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="dl-btn-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div class="dl-btn-label">Audio</div>
+          <div class="dl-btn-sub">MP3</div>
+        </a>
+        <a class="dl-btn music" id="dlMusic" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="dl-btn-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+          </div>
+          <div class="dl-btn-label">BGM</div>
+          <div class="dl-btn-sub">Music</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>SauceTube &mdash; Azazel Codes</footer>
+</div>
+
+<script>
+  // Theme
+  const html = document.documentElement;
+  html.setAttribute('data-theme', localStorage.getItem('st-theme') || 'dark');
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('st-theme', next);
+  });
+
+  // Paste
+  document.getElementById('pasteBtn').addEventListener('click', async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      document.getElementById('urlInput').value = t;
+      checkUrl();
+    } catch {}
+  });
+
+  const urlInput = document.getElementById('urlInput');
+  const goBtn = document.getElementById('goBtn');
+
+  urlInput.addEventListener('input', checkUrl);
+
+  function checkUrl() {
+    const v = urlInput.value.trim();
+    goBtn.disabled = !(v && (v.includes('tiktok.com') || v.includes('tiktok')));
+  }
+
+  const progWrap = document.getElementById('progWrap');
+  const errMsg = document.getElementById('errMsg');
+  const resultCard = document.getElementById('resultCard');
+
+  function sh
