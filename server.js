@@ -6,42 +6,57 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const HF_HEADERS = {
+const YT_HEADERS = {
   "Accept": "application/json",
   "Content-Type": "application/json",
   "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36",
   "Referer": "https://ytconvert.org/"
 };
 
-// POST /api/download — request download job
+// POST /api/download — YouTube download job
 app.post("/api/download", async (req, res) => {
   const { url, output } = req.body;
   if (!url || !output) return res.status(400).json({ error: "Missing url or output" });
-
   try {
     const r = await fetch("https://ytdl.y2mp3.co/api/v2/download", {
       method: "POST",
-      headers: HF_HEADERS,
+      headers: YT_HEADERS,
       body: JSON.stringify({ url, output })
     });
-    const data = await r.json();
-    res.json(data);
+    res.json(await r.json());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/status/:id — poll status
+// GET /api/status/:id — poll YouTube job status
 app.get("/api/status/:id", async (req, res) => {
   try {
-    const r = await fetch(`https://ytdl.y2mp3.co/api/status/${req.params.id}`, {
-      headers: HF_HEADERS
-    });
-    const data = await r.json();
-    res.json(data);
+    const r = await fetch(`https://ytdl.y2mp3.co/api/status/${req.params.id}`, { headers: YT_HEADERS });
+    res.json(await r.json());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// GET /api/tiktok?url=... — TikTok info via tikwm (no encode)
+app.get("/api/tiktok", async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: "Missing url" });
+  try {
+    const r = await fetch(`https://tikwm.com/api/?url=${url}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36"
+      }
+    });
+    res.json(await r.json());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/tiktok", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "tiktok.html"));
 });
 
 app.get("*", (req, res) => {
@@ -50,6 +65,4 @@ app.get("*", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`SauceTube running on port ${PORT}`));
-
 module.exports = app;
-  
