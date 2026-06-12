@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SauceTube — Instagram</title>
+  <link rel="icon" type="image/jpeg" href="/thumbnail.jpg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c10;
+      --surface: rgba(255,255,255,0.045);
+      --surface-h: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.07);
+      --border-s: rgba(255,255,255,0.13);
+      --text: #f2f2f7;
+      --muted: rgba(242,242,247,0.45);
+      --dim: rgba(242,242,247,0.22);
+      --accent: #ff3b30;
+      --ig1: #f58529;
+      --ig2: #dd2a7b;
+      --ig3: #8134af;
+      --shadow: 0 12px 48px rgba(0,0,0,0.7);
+      --r: 18px;
+      --r-sm: 11px;
+    }
+
+    [data-theme="light"] {
+      --bg: #ececf1;
+      --surface: rgba(255,255,255,0.65);
+      --surface-h: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.07);
+      --border-s: rgba(0,0,0,0.13);
+      --text: #0c0c10;
+      --muted: rgba(12,12,16,0.5);
+      --dim: rgba(12,12,16,0.25);
+      --shadow: 0 12px 48px rgba(0,0,0,0.13);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Geist', sans-serif;
+      background: var(--bg); color: var(--text);
+      transition: background 0.35s, color 0.35s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 50% at 10% 5%, rgba(245,133,41,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 50% at 90% 95%, rgba(129,52,175,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 45% at 50% 50%, rgba(221,42,123,0.04) 0%, transparent 60%);
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 600px; margin: 0 auto;
+      padding: 40px 18px 80px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      animation: up 0.4s ease both;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+    .brand-logo {
+      width: 34px; height: 34px; border-radius: 8px;
+      overflow: hidden; border: 1px solid var(--border-s); flex-shrink: 0;
+    }
+
+    .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .brand-name {
+      font-family: 'Geist Mono', monospace;
+      font-size: 15px; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+
+    .brand-name span { color: var(--accent); }
+
+    .brand-sub {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--ig1), var(--ig2), var(--ig3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .theme-btn {
+      width: 42px; height: 25px;
+      background: var(--surface); border: 1px solid var(--border-s);
+      border-radius: 100px; cursor: pointer; position: relative;
+      backdrop-filter: blur(12px); transition: background 0.3s; flex-shrink: 0;
+    }
+
+    .theme-btn::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 17px; height: 17px; border-radius: 50%; background: var(--text);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    [data-theme="light"] .theme-btn::after { transform: translateX(17px); }
+
+    .hero { padding: 8px 0 4px; animation: up 0.4s 0.06s ease both; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px;
+      background: rgba(221,42,123,0.1);
+      border: 1px solid rgba(221,42,123,0.22);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ig2); margin-bottom: 14px;
+    }
+
+    .badge-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--ig2); animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 7vw, 46px);
+      font-weight: 300; line-height: 1.1; letter-spacing: -0.03em;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--ig1), var(--ig2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .hero h1 strong { font-weight: 600; }
+    .hero p { margin-top: 10px; font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.055);
+      overflow: hidden; animation: up 0.4s 0.12s ease both;
+    }
+
+    [data-theme="light"] .card { box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.85); }
+
+    .url-section { padding: 20px 20px 16px; }
+
+    .url-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+
+    .url-row { display: flex; gap: 8px; }
+
+    .url-input {
+      flex: 1; padding: 12px 14px;
+      background: var(--surface-h); border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input::placeholder { color: var(--dim); }
+    .url-input:focus { border-color: var(--ig2); }
+
+    .paste-btn {
+      padding: 0 14px;
+      background: var(--surface-h); border: 1px solid var(--border-s);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .paste-btn:hover { background: rgba(221,42,123,0.1); color: var(--ig2); border-color: rgba(221,42,123,0.25); }
+
+    .divider { height: 1px; background: var(--border); }
+
+    .go-btn {
+      width: 100%; padding: 15px 20px;
+      background: transparent; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ig2);
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .go-btn:hover:not(:disabled) { background: rgba(221,42,123,0.08); }
+    .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .go-btn svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; fill: none; transition: transform 0.25s; }
+    .go-btn:hover:not(:disabled) svg { transform: translateX(4px); }
+
+    .prog-wrap {
+      display: none; padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      flex-direction: column; gap: 8px;
+    }
+
+    .prog-wrap.show { display: flex; }
+
+    .prog-row { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
+
+    .prog-bar { height: 2px; background: var(--border-s); border-radius: 2px; overflow: hidden; }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ig1), var(--ig2), var(--ig3));
+      border-radius: 2px; width: 38%;
+      animation: indie 1.3s ease-in-out infinite;
+    }
+
+    @keyframes indie {
+      0% { transform: translateX(-200%); }
+      100% { transform: translateX(400%); }
+    }
+
+    .err-msg {
+      display: none; padding: 12px 16px;
+      background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2);
+      border-radius: var(--r-sm);
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: rgba(255,100,100,0.9); line-height: 1.6;
+    }
+
+    .err-msg.show { display: block; }
+
+    .result-card { display: none; flex-direction: column; }
+    .result-card.show { display: flex; animation: up 0.35s ease both; }
+
+    /* Post header */
+    .post-header {
+      padding: 16px 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+
+    .post-thumb {
+      width: 64px; height: 64px; border-radius: 10px;
+      overflow: hidden; flex-shrink: 0;
+      border: 1px solid var(--border-s);
+      background: var(--surface-h);
+    }
+
+    .post-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .post-info { flex: 1; min-width: 0; }
+
+    .post-username {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 600; color: var(--ig2);
+      margin-bottom: 4px;
+    }
+
+    .post-title {
+      font-size: 12px; color: var(--text); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* Stats */
+    .stats-row {
+      display: flex; gap: 8px; padding: 0 20px 14px;
+    }
+
+    .stat-pill {
+      flex: 1; padding: 10px 8px;
+      background: var(--surface-h); border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+
+    .stat-val {
+      font-family: 'Geist Mono', monospace;
+      font-size: 14px; font-weight: 600; color: var(--text);
+    }
+
+    .stat-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+    }
+
+    /* Media grid */
+    .media-section { padding: 0 20px 14px; }
+
+    .media-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .media-grid {
+      display: grid; gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .media-item {
+      background: var(--surface-h); border: 1px solid var(--border-s);
+      border-radius: var(--r-sm); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    .media-preview {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; display: block;
+    }
+
+    .media-preview-placeholder {
+      width: 100%; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface-h);
+    }
+
+    .media-preview-placeholder svg { width: 24px; height: 24px; stroke: var(--dim); stroke-width: 1.5; fill: none; }
+
+    .media-dl {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px;
+      text-decoration: none;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted);
+      transition: background 0.18s, color 0.18s;
+      border-top: 1px solid var(--border);
+    }
+
+    .media-dl:hover { background: rgba(221,42,123,0.1); color: var(--ig2); }
+    .media-dl svg { width: 11px; height: 11px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+    /* Comments */
+    .comments-section { padding: 0 20px 20px; }
+
+    .comments-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .comment-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .comment-item {
+      padding: 10px 13px;
+      background: var(--surface-h); border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+
+    .comment-user {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 600; color: var(--ig2);
+    }
+
+    .comment-text { font-size: 12px; color: var(--text); line-height: 1.5; }
+
+    footer {
+      text-align: center; font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--dim);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/">
+      <div class="brand-logo">
+        <img src="/thumbnail.jpg" alt="ST"/>
+      </div>
+      <div>
+        <div class="brand-name">Sauce<span>Tube</span></div>
+        <div class="brand-sub">Instagram</div>
+      </div>
+    </a>
+    <button class="theme-btn" id="themeBtn" type="button"></button>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge"><span class="badge-dot"></span> Instagram Downloader</div>
+    <h1>Download<br><em>Instagram</em><br><strong>media, fast.</strong></h1>
+    <p>Reels, posts, carousels — grab them all.</p>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="url-section">
+      <div class="url-label">Instagram URL</div>
+      <div class="url-row">
+        <input class="url-input" id="urlInput" type="text" placeholder="https://www.instagram.com/reel/..." autocomplete="off" spellcheck="false"/>
+        <button class="paste-btn" id="pasteBtn" type="button">Paste</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="go-btn" id="goBtn" type="button" disabled>
+      <span>Fetch Post</span>
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-row">Fetching...</div>
+      <div class="prog-bar"><div class="prog-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="card result-card" id="resultCard">
+    <!-- Post header -->
+    <div class="post-header">
+      <div class="post-thumb"><img id="postThumb" src="" alt="thumb"/></div>
+      <div class="post-info">
+        <div class="post-username" id="postUsername"></div>
+        <div class="post-title" id="postTitle"></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-pill">
+        <div class="stat-val" id="statLikes">-</div>
+        <div class="stat-label">Likes</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-val" id="statComments">-</div>
+        <div class="stat-label">Comments</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-val" id="statMedia">-</div>
+        <div class="stat-label">Files</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Media -->
+    <div class="media-section">
+      <div class="media-label">Media Files</div>
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Comments -->
+    <div class="comments-section">
+      <div class="comments-label">Top Comments</div>
+      <div class="comment-list" id="commentList"></div>
+    </div>
+  </div>
+
+  <footer>SauceTube &mdash; Azazel Codes</footer>
+</div>
+
+<script>
+(function() {
+  var html = document.documentElement;
+  html.setAttribute('data-theme', localStorage.getItem('st-theme') || 'dark');
+
+  document.getElementById('themeBtn').addEventListener('click', function() {
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('st-theme', next);
+  });
+
+  document.getElementById('pasteBtn').addEventListener('click', function() {
+    navigator.clipboard.readText().then(function(t) {
+      document.getElementById('urlInput').value = t;
+      checkUrl();
+    }).catch(function() {});
+  });
+
+  var urlInput = document.getElementById('urlInput');
+  var goBtn = document.getElementById('goBtn');
+  urlInput.addEventListener('input', checkUrl);
+
+  function checkUrl() {
+    goBtn.disabled = urlInput.value.trim().length < 5;
+  }
+
+  var progWrap = document.getElementById('progWrap');
+  var errMsg = document.getElementById('errMsg');
+  var resultCard = document.getElementById('resultCard');
+
+  function showErr(msg) { errMsg.textContent = msg; errMsg.classList.add('show'); }
+  function hideErr() { errMsg.classList.remove('show'); }
+
+  function fmtNum(n) {
+    if (!n || isNaN(n)) return '0';
+    n = Number(n);
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  goBtn.addEventListener('click', function() {
+    var url = urlInput.value.trim();
+    if (!url) return;
+
+    hideErr();
+    resultCard.classList.remove('show');
+    progWrap.classList.add('show');
+    goBtn.disabled = true;
+
+    fetch('/api/ig?url=' + encodeURIComponent(url))
+      .then(function(r) {
+        if (!r.ok) throw new Error('Request failed: ' + r.status);
+        return r.json();
+      })
+      .then(function(json) {
+        if (!json.status || !json.result) {
+          throw new Error(json.message || 'Failed to fetch post');
+        }
+
+        var d = json.result;
+
+        // Header
+        document.getElementById('postThumb').src = d.thumbnail || '';
+        document.getElementById('postUsername').textContent = '@' + (d.username || '');
+        document.getElementById('postTitle').textContent = d.title || '';
+
+        // Stats
+        document.getElementById('statLikes').textContent = fmtNum(d.likes);
+        document.getElementById('statComments').textContent = fmtNum(d.comment);
+        document.getElementById('statMedia').textContent = (d.media && d.media.length) ? String(d.media.length) : '0';
+
+        // Media grid
+        var grid = document.getElementById('mediaGrid');
+        grid.innerHTML = '';
+        if (d.media && d.media.length) {
+          d.media.forEach(function(item, i) {
+            var el = document.createElement('div');
+            el.className = 'media-item';
+
+            var isVideo = item.type === 'mp4';
+            var label = isVideo ? 'MP4' : 'Image';
+            var ext = item.type || 'file';
+
+            // Preview
+            if (isVideo) {
+              var ph = document.createElement('div');
+              ph.className = 'media-preview-placeholder';
+              ph.innerHTML = '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><polygon points="10,8 16,12 10,16"/></svg>';
+              el.appendChild(ph);
+            } else {
+              var img = document.createElement('img');
+              img.className = 'media-preview';
+              img.src = item.url;
+              img.alt = 'Media ' + (i+1);
+              img.onerror = function() {
+                this.parentElement.innerHTML = '<div class="media-preview-placeholder"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><rect x="8" y="8" width="8" height="8"/></svg></div>';
+              };
+              el.appendChild(img);
+            }
+
+            // Download link
+            var a = document.createElement('a');
+            a.className = 'media-dl';
+            a.href = item.url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' + label + ' ' + (i+1);
+            el.appendChild(a);
+            grid.appendChild(el);
+          });
+        }
+
+        // Comments
+        var list = document.getElementById('commentList');
+        list.innerHTML = '';
+        if (d.comments && d.comments.length) {
+          d.comments.forEach(function(c) {
+            var item = document.createElement('div');
+            item.className = 'comment-item';
+            var user = document.createElement('div');
+            user.className = 'comment-user';
+            user.textContent = '@' + (c.username || '');
+            var text = document.createElement('div');
+            text.className = 'comment-text';
+            text.textContent = c.text || '';
+            item.appendChild(user);
+            item.appendChild(text);
+            list.appendChild(item);
+          });
+        } else {
+          list.innerHTML = '<div style="font-family:Geist Mono,monospace;font-size:11px;color:var(--dim)">No comments found.</div>';
+        }
+
+        progWrap.classList.remove('show');
+        resultCard.classList.add('show');
+        goBtn.disabled = false;
+      })
+      .catch(function(err) {
+        progWrap.classList.remove('show');
+        goBtn.disabled = false;
+        showErr(err.message);
+      });
+  });
+})();
+</script>
+</body>
+</html>
