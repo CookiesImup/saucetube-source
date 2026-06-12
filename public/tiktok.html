@@ -18,11 +18,9 @@
       --text: #f2f2f7;
       --muted: rgba(242,242,247,0.45);
       --dim: rgba(242,242,247,0.22);
-      --accent: #ff3b30;
-      --accent2: #ff6b35;
-      --accent-dim: rgba(255,59,48,0.12);
       --pink: #ff2d55;
       --cyan: #32ade6;
+      --accent: #ff3b30;
       --shadow: 0 12px 48px rgba(0,0,0,0.7);
       --r: 18px;
       --r-sm: 11px;
@@ -50,15 +48,11 @@
     }
 
     body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
         radial-gradient(ellipse 65% 50% at 10% 5%, rgba(255,45,85,0.08) 0%, transparent 60%),
         radial-gradient(ellipse 50% 55% at 90% 90%, rgba(50,173,230,0.06) 0%, transparent 60%);
-    }
-
-    body::after {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.35;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
     }
 
     .wrap {
@@ -94,7 +88,6 @@
       font-family: 'Geist Mono', monospace;
       font-size: 9px; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--pink);
-      margin-left: 2px;
     }
 
     .theme-btn {
@@ -102,6 +95,7 @@
       background: var(--surface); border: 1px solid var(--border-s);
       border-radius: 100px; cursor: pointer; position: relative;
       backdrop-filter: blur(12px); transition: background 0.3s;
+      flex-shrink: 0;
     }
 
     .theme-btn::after {
@@ -113,7 +107,6 @@
 
     [data-theme="light"] .theme-btn::after { transform: translateX(17px); }
 
-    /* Hero */
     .hero { padding: 8px 0 4px; animation: up 0.4s 0.06s ease both; }
 
     .hero-badge {
@@ -148,7 +141,6 @@
     .hero h1 strong { font-weight: 600; }
     .hero p { margin-top: 10px; font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
 
-    /* Card */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -169,8 +161,7 @@
     .url-label {
       font-family: 'Geist Mono', monospace;
       font-size: 10px; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 8px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
     }
 
     .url-row { display: flex; gap: 8px; }
@@ -217,10 +208,15 @@
 
     .go-btn:hover:not(:disabled) { background: rgba(255,45,85,0.08); }
     .go-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .go-btn svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.8; fill: none; transition: transform 0.25s; }
+
+    .go-btn svg {
+      width: 15px; height: 15px;
+      stroke: currentColor; stroke-width: 1.8; fill: none;
+      transition: transform 0.25s;
+    }
+
     .go-btn:hover:not(:disabled) svg { transform: translateX(4px); }
 
-    /* Progress */
     .prog-wrap {
       display: none; padding: 14px 20px;
       border-top: 1px solid var(--border);
@@ -230,7 +226,6 @@
     .prog-wrap.show { display: flex; }
 
     .prog-row {
-      display: flex; justify-content: space-between;
       font-family: 'Geist Mono', monospace;
       font-size: 10px; color: var(--muted); letter-spacing: 0.05em;
     }
@@ -249,7 +244,6 @@
       100% { transform: translateX(400%); }
     }
 
-    /* Error */
     .err-msg {
       display: none; padding: 12px 16px;
       background: rgba(255,59,48,0.08);
@@ -261,59 +255,51 @@
 
     .err-msg.show { display: block; }
 
-    /* Result */
     .result-card {
       display: none; flex-direction: column;
+    }
+
+    .result-card.show {
+      display: flex;
       animation: up 0.35s ease both;
     }
 
-    .result-card.show { display: flex; }
-
-    /* Video preview top */
     .vid-preview {
-      position: relative;
-      background: #000;
-      border-radius: var(--r) var(--r) 0 0;
-      overflow: hidden;
-      max-height: 300px;
+      position: relative; background: #000;
+      border-radius: var(--r) var(--r) 0 0; overflow: hidden;
     }
 
     .vid-cover {
       width: 100%; display: block;
-      object-fit: cover; max-height: 300px;
-      opacity: 0.85;
+      object-fit: cover; max-height: 280px; opacity: 0.85;
     }
 
     .vid-overlay {
       position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.85) 100%);
+      background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.88) 100%);
       display: flex; flex-direction: column; justify-content: flex-end;
       padding: 16px;
     }
 
     .vid-title {
       font-size: 13px; font-weight: 500; color: #fff;
-      line-height: 1.4; margin-bottom: 6px;
+      line-height: 1.4; margin-bottom: 8px;
       display: -webkit-box; -webkit-line-clamp: 2;
       -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    .vid-author {
-      display: flex; align-items: center; gap: 8px;
-    }
+    .vid-author { display: flex; align-items: center; gap: 8px; }
 
     .author-avatar {
-      width: 24px; height: 24px; border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.3);
-      object-fit: cover;
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.3); object-fit: cover;
     }
 
     .author-name {
       font-family: 'Geist Mono', monospace;
-      font-size: 11px; color: rgba(255,255,255,0.8);
+      font-size: 11px; color: rgba(255,255,255,0.85);
     }
 
-    /* Info grid */
     .info-section { padding: 16px 20px; }
 
     .info-grid {
@@ -322,10 +308,8 @@
     }
 
     .info-cell {
-      background: var(--surface-h);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 10px 12px;
+      background: var(--surface-h); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 10px 12px;
       display: flex; flex-direction: column; gap: 3px;
     }
 
@@ -337,23 +321,19 @@
 
     .info-cell-val {
       font-family: 'Geist Mono', monospace;
-      font-size: 12px; font-weight: 500; color: var(--text);
+      font-size: 13px; font-weight: 500; color: var(--text);
     }
 
-    /* Music row */
     .music-row {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 14px;
-      background: var(--surface-h);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      margin-bottom: 14px;
+      background: var(--surface-h); border: 1px solid var(--border);
+      border-radius: var(--r-sm); margin-bottom: 14px;
     }
 
     .music-cover {
       width: 38px; height: 38px; border-radius: 8px;
-      object-fit: cover; flex-shrink: 0;
-      border: 1px solid var(--border-s);
+      object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-s);
     }
 
     .music-info { flex: 1; min-width: 0; }
@@ -369,67 +349,57 @@
     }
 
     .music-badge {
-      font-family: 'Geist Mono', monospace;
-      font-size: 9px; padding: 2px 7px;
-      background: rgba(50,173,230,0.12);
+      font-family: 'Geist Mono', monospace; font-size: 9px;
+      padding: 2px 7px; background: rgba(50,173,230,0.12);
       border: 1px solid rgba(50,173,230,0.2);
       border-radius: 100px; color: var(--cyan);
-      letter-spacing: 0.08em; text-transform: uppercase;
-      flex-shrink: 0;
+      letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
     }
 
-    /* Download buttons */
-    .dl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .dl-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
 
     .dl-btn {
       display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 5px;
-      padding: 12px 8px;
-      background: var(--surface-h);
-      border: 1px solid var(--border-s);
-      border-radius: var(--r-sm);
-      text-decoration: none; cursor: pointer;
-      transition: all 0.18s;
+      justify-content: center; gap: 5px; padding: 12px 8px;
+      background: var(--surface-h); border: 1px solid var(--border-s);
+      border-radius: var(--r-sm); text-decoration: none;
+      transition: transform 0.18s, background 0.18s, border-color 0.18s;
     }
 
     .dl-btn:hover { transform: translateY(-2px); }
 
     .dl-btn.mp4:hover { background: rgba(255,59,48,0.12); border-color: rgba(255,59,48,0.3); }
     .dl-btn.mp3:hover { background: rgba(50,173,230,0.12); border-color: rgba(50,173,230,0.3); }
-    .dl-btn.music:hover { background: rgba(255,45,85,0.12); border-color: rgba(255,45,85,0.3); }
+    .dl-btn.bgm:hover { background: rgba(255,45,85,0.12); border-color: rgba(255,45,85,0.3); }
 
-    .dl-btn-icon {
-      width: 28px; height: 28px; border-radius: 7px;
+    .dl-icon {
+      width: 30px; height: 30px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
     }
 
-    .dl-btn.mp4 .dl-btn-icon { background: rgba(255,59,48,0.15); }
-    .dl-btn.mp3 .dl-btn-icon { background: rgba(50,173,230,0.15); }
-    .dl-btn.music .dl-btn-icon { background: rgba(255,45,85,0.15); }
+    .dl-btn.mp4 .dl-icon { background: rgba(255,59,48,0.15); }
+    .dl-btn.mp3 .dl-icon { background: rgba(50,173,230,0.15); }
+    .dl-btn.bgm .dl-icon { background: rgba(255,45,85,0.15); }
 
-    .dl-btn-icon svg { width: 14px; height: 14px; stroke-width: 1.8; fill: none; }
-    .dl-btn.mp4 .dl-btn-icon svg { stroke: var(--accent); }
-    .dl-btn.mp3 .dl-btn-icon svg { stroke: var(--cyan); }
-    .dl-btn.music .dl-btn-icon svg { stroke: var(--pink); }
+    .dl-icon svg { width: 14px; height: 14px; stroke-width: 1.8; fill: none; }
+    .dl-btn.mp4 .dl-icon svg { stroke: var(--accent); }
+    .dl-btn.mp3 .dl-icon svg { stroke: var(--cyan); }
+    .dl-btn.bgm .dl-icon svg { stroke: var(--pink); }
 
-    .dl-btn-label {
+    .dl-label {
       font-family: 'Geist Mono', monospace;
       font-size: 10px; font-weight: 500;
       letter-spacing: 0.07em; text-transform: uppercase;
     }
 
-    .dl-btn.mp4 .dl-btn-label { color: var(--accent); }
-    .dl-btn.mp3 .dl-btn-label { color: var(--cyan); }
-    .dl-btn.music .dl-btn-label { color: var(--pink); }
+    .dl-btn.mp4 .dl-label { color: var(--accent); }
+    .dl-btn.mp3 .dl-label { color: var(--cyan); }
+    .dl-btn.bgm .dl-label { color: var(--pink); }
 
-    .dl-btn-sub {
-      font-family: 'Geist Mono', monospace;
-      font-size: 9px; color: var(--dim);
-    }
+    .dl-sub { font-family: 'Geist Mono', monospace; font-size: 9px; color: var(--dim); }
 
     footer {
-      text-align: center;
-      font-family: 'Geist Mono', monospace;
+      text-align: center; font-family: 'Geist Mono', monospace;
       font-size: 10px; color: var(--dim);
       letter-spacing: 0.08em; text-transform: uppercase;
     }
@@ -441,18 +411,19 @@
   </style>
 </head>
 <body>
+
 <div class="wrap">
   <nav>
     <a class="brand" href="/">
       <div class="brand-logo">
-        <img src="/thumbnail.jpg" alt="SauceTube" onerror="this.parentElement.innerHTML='<svg viewBox=\'0 0 34 34\' fill=\'none\'><rect width=\'34\' height=\'34\' fill=\'%23ff3b30\'/><polygon points=\'13,10 24,17 13,24\' fill=\'white\'/></svg>'"/>
+        <img src="/thumbnail.jpg" alt="ST"/>
       </div>
       <div>
         <div class="brand-name">Sauce<span>Tube</span></div>
         <div class="brand-sub">TikTok</div>
       </div>
     </a>
-    <button class="theme-btn" id="themeBtn"></button>
+    <button class="theme-btn" id="themeBtn" type="button"></button>
   </nav>
 
   <div class="hero">
@@ -465,17 +436,17 @@
     <div class="url-section">
       <div class="url-label">TikTok URL</div>
       <div class="url-row">
-        <input class="url-input" id="urlInput" type="url" placeholder="https://vt.tiktok.com/..." autocomplete="off" spellcheck="false"/>
-        <button class="paste-btn" id="pasteBtn">Paste</button>
+        <input class="url-input" id="urlInput" type="text" placeholder="https://vt.tiktok.com/..." autocomplete="off" spellcheck="false"/>
+        <button class="paste-btn" id="pasteBtn" type="button">Paste</button>
       </div>
     </div>
     <div class="divider"></div>
-    <button class="go-btn" id="goBtn" disabled>
+    <button class="go-btn" id="goBtn" type="button" disabled>
       <span>Fetch Info</span>
       <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </button>
     <div class="prog-wrap" id="progWrap">
-      <div class="prog-row"><span>Fetching...</span></div>
+      <div class="prog-row">Fetching...</div>
       <div class="prog-bar"><div class="prog-fill"></div></div>
     </div>
   </div>
@@ -483,7 +454,6 @@
   <div class="err-msg" id="errMsg"></div>
 
   <div class="card result-card" id="resultCard">
-    <!-- Cover + title -->
     <div class="vid-preview">
       <img class="vid-cover" id="vidCover" src="" alt="cover"/>
       <div class="vid-overlay">
@@ -494,8 +464,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Stats -->
     <div class="info-section">
       <div class="info-grid">
         <div class="info-cell">
@@ -523,39 +491,35 @@
           <div class="info-cell-val" id="statDur">-</div>
         </div>
       </div>
-
-      <!-- Music info -->
       <div class="music-row">
         <img class="music-cover" id="musicCover" src="" alt="music"/>
         <div class="music-info">
-          <div class="music-title" id="musicTitle"></div>
-          <div class="music-author" id="musicAuthor"></div>
+          <div class="music-title" id="musicTitle">-</div>
+          <div class="music-author" id="musicAuthor">-</div>
         </div>
         <div class="music-badge">Music</div>
       </div>
-
-      <!-- Download buttons -->
       <div class="dl-grid">
         <a class="dl-btn mp4" id="dlMp4" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="dl-btn-icon">
+          <div class="dl-icon">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </div>
-          <div class="dl-btn-label">MP4</div>
-          <div class="dl-btn-sub">No WM</div>
+          <div class="dl-label">MP4</div>
+          <div class="dl-sub">No WM</div>
         </a>
         <a class="dl-btn mp3" id="dlMp3" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="dl-btn-icon">
+          <div class="dl-icon">
             <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           </div>
-          <div class="dl-btn-label">Audio</div>
-          <div class="dl-btn-sub">MP3</div>
+          <div class="dl-label">Audio</div>
+          <div class="dl-sub">MP3</div>
         </a>
-        <a class="dl-btn music" id="dlMusic" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="dl-btn-icon">
+        <a class="dl-btn bgm" id="dlBgm" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="dl-icon">
             <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
           </div>
-          <div class="dl-btn-label">BGM</div>
-          <div class="dl-btn-sub">Music</div>
+          <div class="dl-label">BGM</div>
+          <div class="dl-sub">Music</div>
         </a>
       </div>
     </div>
@@ -565,36 +529,119 @@
 </div>
 
 <script>
+(function() {
   // Theme
-  const html = document.documentElement;
-  html.setAttribute('data-theme', localStorage.getItem('st-theme') || 'dark');
-  document.getElementById('themeBtn').addEventListener('click', () => {
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  var html = document.documentElement;
+  var saved = localStorage.getItem('st-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+
+  document.getElementById('themeBtn').addEventListener('click', function() {
+    var cur = html.getAttribute('data-theme');
+    var next = cur === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
     localStorage.setItem('st-theme', next);
   });
 
   // Paste
-  document.getElementById('pasteBtn').addEventListener('click', async () => {
-    try {
-      const t = await navigator.clipboard.readText();
+  document.getElementById('pasteBtn').addEventListener('click', function() {
+    navigator.clipboard.readText().then(function(t) {
       document.getElementById('urlInput').value = t;
       checkUrl();
-    } catch {}
+    }).catch(function() {});
   });
 
-  const urlInput = document.getElementById('urlInput');
-  const goBtn = document.getElementById('goBtn');
+  var urlInput = document.getElementById('urlInput');
+  var goBtn = document.getElementById('goBtn');
 
   urlInput.addEventListener('input', checkUrl);
 
   function checkUrl() {
-    const v = urlInput.value.trim();
-    goBtn.disabled = !(v && (v.includes('tiktok.com') || v.includes('tiktok')));
+    var v = urlInput.value.trim();
+    goBtn.disabled = !(v.length > 5);
   }
 
-  const progWrap = document.getElementById('progWrap');
-  const errMsg = document.getElementById('errMsg');
-  const resultCard = document.getElementById('resultCard');
+  var progWrap = document.getElementById('progWrap');
+  var errMsg = document.getElementById('errMsg');
+  var resultCard = document.getElementById('resultCard');
 
-  function sh
+  function showErr(msg) {
+    errMsg.textContent = msg;
+    errMsg.classList.add('show');
+  }
+
+  function hideErr() {
+    errMsg.classList.remove('show');
+  }
+
+  function fmtNum(n) {
+    if (!n || isNaN(n)) return '0';
+    n = Number(n);
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  function fmtDur(s) {
+    s = Number(s) || 0;
+    var m = Math.floor(s / 60);
+    var sec = String(Math.floor(s % 60)).padStart(2, '0');
+    return m + ':' + sec;
+  }
+
+  goBtn.addEventListener('click', function() {
+    var url = urlInput.value.trim();
+    if (!url) return;
+
+    hideErr();
+    resultCard.classList.remove('show');
+    progWrap.classList.add('show');
+    goBtn.disabled = true;
+
+    fetch('/api/tiktok?url=' + url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('Request failed: ' + r.status);
+        return r.json();
+      })
+      .then(function(json) {
+        if (json.code !== 0 || !json.data) {
+          throw new Error(json.msg || 'Failed to fetch TikTok info');
+        }
+
+        var d = json.data;
+
+        document.getElementById('vidCover').src = d.cover || d.origin_cover || '';
+        document.getElementById('vidTitle').textContent = d.title || '';
+        document.getElementById('authorAvatar').src = (d.author && d.author.avatar) ? d.author.avatar : '';
+        document.getElementById('authorName').textContent = '@' + ((d.author && d.author.unique_id) ? d.author.unique_id : '');
+
+        document.getElementById('statPlay').textContent = fmtNum(d.play_count);
+        document.getElementById('statLike').textContent = fmtNum(d.digg_count);
+        document.getElementById('statShare').textContent = fmtNum(d.share_count);
+        document.getElementById('statComment').textContent = fmtNum(d.comment_count);
+        document.getElementById('statCollect').textContent = fmtNum(d.collect_count);
+        document.getElementById('statDur').textContent = fmtDur(d.duration);
+
+        var mi = d.music_info || {};
+        document.getElementById('musicCover').src = mi.cover || '';
+        document.getElementById('musicTitle').textContent = mi.title || '-';
+        document.getElementById('musicAuthor').textContent = mi.author || '-';
+
+        document.getElementById('dlMp4').href = d.play || '#';
+        document.getElementById('dlMp3').href = d.music || '#';
+        document.getElementById('dlBgm').href = (mi.play || d.music || '#');
+
+        progWrap.classList.remove('show');
+        resultCard.classList.add('show');
+        goBtn.disabled = false;
+      })
+      .catch(function(err) {
+        progWrap.classList.remove('show');
+        goBtn.disabled = false;
+        showErr(err.message);
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
