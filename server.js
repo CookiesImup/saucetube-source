@@ -13,33 +13,24 @@ const YT_HEADERS = {
   "Referer": "https://ytconvert.org/"
 };
 
-// POST /api/download — YouTube download job
 app.post("/api/download", async (req, res) => {
   const { url, output } = req.body;
   if (!url || !output) return res.status(400).json({ error: "Missing url or output" });
   try {
     const r = await fetch("https://ytdl.y2mp3.co/api/v2/download", {
-      method: "POST",
-      headers: YT_HEADERS,
-      body: JSON.stringify({ url, output })
+      method: "POST", headers: YT_HEADERS, body: JSON.stringify({ url, output })
     });
     res.json(await r.json());
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/status/:id — poll YouTube job status
 app.get("/api/status/:id", async (req, res) => {
   try {
     const r = await fetch("https://ytdl.y2mp3.co/api/status/" + req.params.id, { headers: YT_HEADERS });
     res.json(await r.json());
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/tiktok?url=...
 app.get("/api/tiktok", async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: "Missing url" });
@@ -48,29 +39,29 @@ app.get("/api/tiktok", async (req, res) => {
       headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36" }
     });
     res.json(await r.json());
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/ig?url=... — Instagram downloader
 app.get("/api/ig", async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: "Missing url" });
   try {
-    const encoded = encodeURIComponent(url);
-    const r = await fetch("https://api.nexray.eu.cc/downloader/v2/instagram?url=" + encoded, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36"
-      }
+    const r = await fetch("https://api.nexray.eu.cc/downloader/v2/instagram?url=" + encodeURIComponent(url), {
+      headers: { "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36" }
     });
     const data = await r.json();
-    // Override author
     if (data.author) data.author = "SauceTube";
     res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Page routes
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "landing.html"));
+});
+
+app.get("/youtube", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "youtube.html"));
 });
 
 app.get("/tiktok", (req, res) => {
@@ -79,10 +70,6 @@ app.get("/tiktok", (req, res) => {
 
 app.get("/instagram", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "instagram.html"));
-});
-
-app.get("/youtube", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("*", (req, res) => {
