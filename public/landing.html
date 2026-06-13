@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SauceTube — Download Anything</title>
+  <link rel="icon" type="image/jpeg" href="/thumbnail.jpg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c10;
+      --surface: rgba(255,255,255,0.045);
+      --surface-h: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.07);
+      --border-s: rgba(255,255,255,0.13);
+      --text: #f2f2f7;
+      --muted: rgba(242,242,247,0.45);
+      --dim: rgba(242,242,247,0.2);
+      --accent: #ff3b30;
+      --shadow: 0 12px 48px rgba(0,0,0,0.7);
+      --r: 20px;
+      --r-sm: 12px;
+    }
+
+    [data-theme="light"] {
+      --bg: #ececf1;
+      --surface: rgba(255,255,255,0.65);
+      --surface-h: rgba(255,255,255,0.85);
+      --border: rgba(0,0,0,0.07);
+      --border-s: rgba(0,0,0,0.13);
+      --text: #0c0c10;
+      --muted: rgba(12,12,16,0.5);
+      --dim: rgba(12,12,16,0.2);
+      --shadow: 0 12px 48px rgba(0,0,0,0.13);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Geist', sans-serif;
+      background: var(--bg); color: var(--text);
+      transition: background 0.35s, color 0.35s;
+      overflow-x: hidden;
+    }
+
+    /* Animated background blobs */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12;
+      animation: blobFloat 8s ease-in-out infinite;
+    }
+
+    .blob1 { width: 400px; height: 400px; background: #ff3b30; top: -100px; left: -100px; animation-delay: 0s; }
+    .blob2 { width: 300px; height: 300px; background: #dd2a7b; top: 30%; right: -80px; animation-delay: 2s; }
+    .blob3 { width: 350px; height: 350px; background: #32ade6; bottom: -80px; left: 30%; animation-delay: 4s; }
+    .blob4 { width: 250px; height: 250px; background: #f58529; bottom: 20%; left: -60px; animation-delay: 1s; }
+
+    [data-theme="light"] .blob { opacity: 0.06; }
+
+    @keyframes blobFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -20px) scale(1.05); }
+      66% { transform: translate(-15px, 15px) scale(0.95); }
+    }
+
+    /* Noise */
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.3;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 640px; margin: 0 auto;
+      padding: 40px 18px 120px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+
+    /* Nav */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      animation: up 0.5s ease both;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-logo {
+      width: 36px; height: 36px; border-radius: 9px;
+      overflow: hidden; border: 1px solid var(--border-s); flex-shrink: 0;
+    }
+
+    .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .brand-name {
+      font-family: 'Geist Mono', monospace;
+      font-size: 16px; font-weight: 600; letter-spacing: -0.02em;
+    }
+
+    .brand-name span { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    /* Live indicator */
+    .live-pill {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: rgba(52,199,89,0.1);
+      border: 1px solid rgba(52,199,89,0.2);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: #34c759;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #34c759;
+      animation: livePulse 1.5s ease infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52,199,89,0.4); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(52,199,89,0); }
+    }
+
+    .theme-btn {
+      width: 42px; height: 25px;
+      background: var(--surface); border: 1px solid var(--border-s);
+      border-radius: 100px; cursor: pointer; position: relative;
+      backdrop-filter: blur(12px); transition: background 0.3s; flex-shrink: 0;
+    }
+
+    .theme-btn::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 17px; height: 17px; border-radius: 50%; background: var(--text);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    [data-theme="light"] .theme-btn::after { transform: translateX(17px); }
+
+    /* Hero */
+    .hero { text-align: center; padding: 20px 0 8px; animation: up 0.5s 0.08s ease both; }
+
+    .hero h1 {
+      font-size: clamp(36px, 10vw, 64px);
+      font-weight: 300; line-height: 1.05; letter-spacing: -0.04em;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero h1 strong { font-weight: 700; }
+
+    .hero p {
+      font-size: 13px; color: var(--muted);
+      letter-spacing: 0.02em; max-width: 380px; margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Online counter */
+    .online-bar {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      animation: up 0.5s 0.14s ease both;
+    }
+
+    .online-item {
+      display: flex; align-items: center; gap: 7px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; color: var(--muted);
+    }
+
+    .online-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+    }
+
+    .online-dot.green { background: #34c759; box-shadow: 0 0 6px #34c759; }
+    .online-dot.yellow { background: #ffd60a; box-shadow: 0 0 6px #ffd60a; }
+
+    .online-count { color: var(--text); font-weight: 600; }
+
+    /* Platform cards */
+    .cards-grid {
+      display: grid; gap: 14px;
+      animation: up 0.5s 0.18s ease both;
+    }
+
+    .platform-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.055);
+      overflow: hidden;
+      text-decoration: none; color: var(--text);
+      display: flex; flex-direction: column;
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), border-color 0.25s, box-shadow 0.25s;
+      position: relative;
+    }
+
+    [data-theme="light"] .platform-card {
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+
+    .platform-card:hover { transform: translateY(-3px); }
+    .platform-card.yt:hover { border-color: rgba(255,59,48,0.4); box-shadow: var(--shadow), 0 0 0 1px rgba(255,59,48,0.15), inset 0 1px 0 rgba(255,255,255,0.055); }
+    .platform-card.ig:hover { border-color: rgba(221,42,123,0.4); box-shadow: var(--shadow), 0 0 0 1px rgba(221,42,123,0.15), inset 0 1px 0 rgba(255,255,255,0.055); }
+    .platform-card.tt:hover { border-color: rgba(50,173,230,0.4); box-shadow: var(--shadow), 0 0 0 1px rgba(50,173,230,0.15), inset 0 1px 0 rgba(255,255,255,0.055); }
+
+    .card-top {
+      padding: 22px 22px 16px;
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+
+    .card-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+
+    .card-icon svg { width: 26px; height: 26px; fill: #fff; position: relative; z-index: 1; }
+
+    .yt .card-icon { background: #ff3b30; }
+    .ig .card-icon { background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af); }
+    .tt .card-icon { background: #010101; border: 1px solid var(--border-s); }
+
+    .card-info { flex: 1; }
+
+    .card-name {
+      font-size: 18px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+
+    .card-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    .card-tags {
+      display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;
+    }
+
+    .tag {
+      padding: 2px 8px;
+      background: var(--surface-h); border: 1px solid var(--border);
+      border-radius: 100px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card-arrow {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .yt .card-arrow { color: rgba(255,59,48,0.7); }
+    .ig .card-arrow { color: rgba(221,42,123,0.7); }
+    .tt .card-arrow { color: rgba(50,173,230,0.7); }
+
+    .yt:hover .card-arrow { color: #ff3b30; }
+    .ig:hover .card-arrow { color: #dd2a7b; }
+    .tt:hover .card-arrow { color: #32ade6; }
+
+    .card-arrow svg {
+      width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .platform-card:hover .card-arrow svg { transform: translateX(4px); }
+
+    /* Activity feed */
+    .activity-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.055);
+      overflow: hidden;
+      animation: up 0.5s 0.24s ease both;
+    }
+
+    [data-theme="light"] .activity-wrap {
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.85);
+    }
+
+    .activity-header {
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .activity-title {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    }
+
+    .activity-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: #34c759;
+    }
+
+    .activity-list { padding: 8px 0; max-height: 200px; overflow: hidden; position: relative; }
+
+    .activity-list::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+      background: linear-gradient(transparent, var(--bg));
+      pointer-events: none;
+    }
+
+    [data-theme="light"] .activity-list::after { background: linear-gradient(transparent, var(--bg)); }
+
+    .activity-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 18px;
+      animation: slideIn 0.4s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .activity-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surface-h); border: 1px solid var(--border-s);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0;
+      font-family: 'Geist Mono', monospace; font-weight: 600; color: var(--muted);
+    }
+
+    .activity-text { flex: 1; font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .activity-text strong { color: var(--text); font-weight: 500; }
+    .activity-text span { color: var(--dim); }
+
+    .activity-platform {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 100px; border: 1px solid;
+    }
+
+    .ap-yt { color: #ff3b30; border-color: rgba(255,59,48,0.25); background: rgba(255,59,48,0.08); }
+    .ap-ig { color: #dd2a7b; border-color: rgba(221,42,123,0.25); background: rgba(221,42,123,0.08); }
+    .ap-tt { color: #32ade6; border-color: rgba(50,173,230,0.25); background: rgba(50,173,230,0.08); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+      animation: up 0.5s 0.28s ease both;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      backdrop-filter: blur(20px);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Geist Mono', monospace;
+      font-size: 22px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-lbl {
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+      margin-top: 3px;
+    }
+
+    /* Footer / admin button */
+    .footer-area {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      animation: up 0.5s 0.32s ease both;
+    }
+
+    .admin-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border-s);
+      border-radius: 100px;
+      backdrop-filter: blur(20px);
+      text-decoration: none; color: var(--text);
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    .admin-btn:hover {
+      background: rgba(37,211,102,0.1);
+      border-color: rgba(37,211,102,0.3);
+      transform: translateY(-2px);
+    }
+
+    .admin-btn-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #25d366;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .admin-btn-icon svg { width: 15px; height: 15px; fill: #fff; }
+
+    .admin-btn-text { color: var(--text); }
+
+    .footer-copy {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: var(--dim);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Ticker */
+    .ticker-wrap {
+      overflow: hidden; border-radius: 100px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 8px 0;
+      animation: up 0.5s 0.1s ease both;
+    }
+
+    .ticker {
+      display: flex; gap: 48px;
+      animation: ticker 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--dim); flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .ticker-dot {
+      width: 3px; height: 3px; border-radius: 50%; background: var(--dim);
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="blob blob4"></div>
+</div>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="/thumbnail.jpg" alt="ST"/>
+      </div>
+      <div class="brand-name">Sauce<span>Tube</span></div>
+    </div>
+    <div class="nav-right">
+      <div class="live-pill"><span class="live-dot"></span> Live</div>
+      <button class="theme-btn" id="themeBtn" type="button"></button>
+    </div>
+  </nav>
+
+  <!-- Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker" id="ticker">
+      <span class="ticker-item"><span class="ticker-dot"></span> YouTube 4K downloader</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Instagram reels</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> TikTok no watermark</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> MP3 320kbps</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Fast conversion</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> No signup required</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> YouTube 4K downloader</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Instagram reels</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> TikTok no watermark</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> MP3 320kbps</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Fast conversion</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> No signup required</span>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Download<br><em>anything.</em><br><strong>Instantly.</strong></h1>
+    <p>YouTube, Instagram, TikTok — grab videos, audio, and media without watermarks. Free, fast, no account needed.</p>
+  </div>
+
+  <!-- Online counter -->
+  <div class="online-bar">
+    <div class="online-item">
+      <span class="online-dot green"></span>
+      <span><span class="online-count" id="onlineCount">-</span> online now</span>
+    </div>
+    <div class="online-item">
+      <span class="online-dot yellow"></span>
+      <span><span class="online-count" id="todayCount">-</span> downloads today</span>
+    </div>
+  </div>
+
+  <!-- Platform cards -->
+  <div class="cards-grid">
+    <a class="platform-card yt" href="/youtube">
+      <div class="card-top">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8z"/><polygon points="9.7,15.5 15.8,12 9.7,8.5" fill="#ff3b30"/></svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">YouTube</div>
+          <div class="card-desc">Download videos up to 4K or strip audio as MP3, WAV, FLAC and more.</div>
+          <div class="card-tags">
+            <span class="tag">MP4</span>
+            <span class="tag">WebM</span>
+            <span class="tag">MKV</span>
+            <span class="tag">MP3</span>
+            <span class="tag">4K</span>
+            <span class="tag">FLAC</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-arrow">
+        <span>Open Downloader</span>
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+
+    <a class="platform-card ig" href="/instagram">
+      <div class="card-top">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="#fff" stroke-width="2"/><path d="M16 11.4a4 4 0 1 1-4.9-3.9 4 4 0 0 1 4.9 3.9z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="#fff"/></svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Instagram</div>
+          <div class="card-desc">Download reels, posts, and carousels. View likes, comments, and full media.</div>
+          <div class="card-tags">
+            <span class="tag">Reels</span>
+            <span class="tag">Posts</span>
+            <span class="tag">Carousel</span>
+            <span class="tag">No WM</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-arrow">
+        <span>Open Downloader</span>
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+
+    <a class="platform-card tt" href="/tiktok">
+      <div class="card-top">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M19.6 3.8a5.8 5.8 0 0 1-3.6-3.8h-3.2v14.6a2.7 2.7 0 0 1-2.7 2.3 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V8.3a6 6 0 0 0-.8-.1 5.9 5.9 0 0 0-5.9 5.9 5.9 5.9 0 0 0 5.9 5.9 5.9 5.9 0 0 0 5.9-5.9V8a9 9 0 0 0 5.2 1.6V6.5a5.8 5.8 0 0 1-1.6-.7z"/></svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">TikTok</div>
+          <div class="card-desc">Grab TikTok videos without watermark, extract audio, or download the background music.</div>
+          <div class="card-tags">
+            <span class="tag">No WM</span>
+            <span class="tag">MP4</span>
+            <span class="tag">Audio</span>
+            <span class="tag">BGM</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-arrow">
+        <span>Open Downloader</span>
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num" id="s1">-</div>
+      <div class="stat-lbl">Total Downloads</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-lbl">Platforms</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4K</div>
+      <div class="stat-lbl">Max Quality</div>
+    </div>
+  </div>
+
+  <!-- Activity feed -->
+  <div class="activity-wrap">
+    <div class="activity-header">
+      <div class="activity-title">Live Activity</div>
+      <div class="activity-badge"><span class="live-dot" style="width:5px;height:5px;"></span> Real-time</div>
+    </div>
+    <div class="activity-list" id="activityList"></div>
+  </div>
+
+  <!-- Footer / Admin -->
+  <div class="footer-area">
+    <a class="admin-btn" href="https://wa.me/6285187499355" target="_blank" rel="noopener noreferrer">
+      <div class="admin-btn-icon">
+        <svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.2-.8.9-1 1.1-.2.2-.3.2-.6.1-1.7-.9-2.8-1.5-3.9-3.5-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5-.1-.1-.7-1.7-.9-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4C7 7.1 6 8 6 9.9c0 1.9 1.4 3.8 1.6 4 .2.2 2.7 4.2 6.6 5.7 2.4.9 3.3 1 4.5.8 1.3-.2 2.3-1.1 2.7-2.1.4-1 .3-1.8.2-2-.1-.2-.3-.3-.6-.4z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+      </div>
+      <div class="admin-btn-text">Chat Admin</div>
+    </a>
+    <div class="footer-copy">SauceTube &mdash; Azazel Codes</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Theme
+  var html = document.documentElement;
+  html.setAttribute('data-theme', localStorage.getItem('st-theme') || 'dark');
+  document.getElementById('themeBtn').addEventListener('click', function() {
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('st-theme', next);
+  });
+
+  // Fake online/download counters
+  var online = Math.floor(Math.random() * 80) + 40;
+  var today = Math.floor(Math.random() * 3000) + 1200;
+  var total = Math.floor(Math.random() * 50000) + 80000;
+
+  document.getElementById('onlineCount').textContent = online;
+  document.getElementById('todayCount').textContent = today.toLocaleString();
+  document.getElementById('s1').textContent = total.toLocaleString();
+
+  // Fluctuate counters
+  setInterval(function() {
+    online += Math.floor(Math.random() * 5) - 2;
+    if (online < 20) online = 20;
+    if (online > 200) online = 200;
+    document.getElementById('onlineCount').textContent = online;
+
+    today += Math.floor(Math.random() * 3);
+    document.getElementById('todayCount').textContent = today.toLocaleString();
+
+    total += Math.floor(Math.random() * 3);
+    document.getElementById('s1').textContent = total.toLocaleString();
+  }, 3000);
+
+  // Fake activity feed
+  var names = ['alex_**','user_**','j**n','m**a','k**i','r**z','s**y','b**o','d**w','f**r','t**a','n**l'];
+  var actions = [
+    { text: 'downloaded a video', platform: 'yt' },
+    { text: 'grabbed a reel', platform: 'ig' },
+    { text: 'saved TikTok without watermark', platform: 'tt' },
+    { text: 'converted to MP3', platform: 'yt' },
+    { text: 'downloaded carousel', platform: 'ig' },
+    { text: 'extracted BGM', platform: 'tt' },
+    { text: 'downloaded 4K video', platform: 'yt' },
+    { text: 'downloaded a reel', platform: 'ig' },
+    { text: 'grabbed TikTok audio', platform: 'tt' },
+    { text: 'converted to FLAC', platform: 'yt' },
+  ];
+
+  var platformLabel = { yt: 'YouTube', ig: 'Instagram', tt: 'TikTok' };
+  var list = document.getElementById('activityList');
+
+  function randomName() {
+    var n = names[Math.floor(Math.random() * names.length)];
+    return n.replace('**', Math.floor(Math.random()*900+100).toString());
+  }
+
+  function timeAgo() {
+    var s = Math.floor(Math.random() * 55) + 1;
+    return s + 's ago';
+  }
+
+  function addActivity() {
+    var action = actions[Math.floor(Math.random() * actions.length)];
+    var name = randomName();
+    var ago = timeAgo();
+
+    var item = document.createElement('div');
+    item.className = 'activity-item';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'activity-avatar';
+    avatar.textContent = name[0].toUpperCase();
+
+    var text = document.createElement('div');
+    text.className = 'activity-text';
+    text.innerHTML = '<strong>' + name + '</strong> ' + action.text + ' <span>' + ago + '</span>';
+
+    var badge = document.createElement('div');
+    badge.className = 'activity-platform ap-' + action.platform;
+    badge.textContent = platformLabel[action.platform];
+
+    item.appendChild(avatar);
+    item.appendChild(text);
+    item.appendChild(badge);
+
+    list.insertBefore(item, list.firstChild);
+
+    // Remove oldest if too many
+    var items = list.querySelectorAll('.activity-item');
+    if (items.length > 8) {
+      list.removeChild(items[items.length - 1]);
+    }
+  }
+
+  // Initial entries
+  for (var i = 0; i < 5; i++) {
+    (function(delay) {
+      setTimeout(addActivity, delay);
+    })(i * 200);
+  }
+
+  // Keep adding
+  setInterval(addActivity, 2800);
+})();
+</script>
+</body>
+</html>
