@@ -1,7 +1,34 @@
 const express = require("express");
 const fetch = require("node-fetch");
 const path = require("path");
+const { spawn } = require("child_process");
 
+// Bot spawner — restart every 5 minutes
+let botProcess = null;
+
+function startBot() {
+  if (botProcess) {
+    botProcess.kill();
+    botProcess = null;
+  }
+  console.log("[Bot] Starting bot/index.js...");
+  botProcess = spawn("node", [path.join(__dirname, "bot", "index.js")], {
+    stdio: "inherit",
+    detached: false
+  });
+  botProcess.on("exit", function(code) {
+    console.log("[Bot] Exited with code", code);
+    botProcess = null;
+  });
+}
+
+startBot();
+setInterval(function() {
+  console.log("[Bot] Auto-restart (5 min)");
+  startBot();
+}, 5 * 60 * 1000);
+
+// Web server
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -55,7 +82,6 @@ app.get("/api/ig", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Page routes
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "landing.html"));
 });
